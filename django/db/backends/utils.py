@@ -213,12 +213,22 @@ def truncate_name(identifier, length=None, hash_len=4):
     return '%s%s%s' % ('%s"."' % namespace if namespace else '', name[:length - hash_len], digest)
 
 
+try:
+    hashlib.md5()
+except ValueError:
+    def _insecure_md5():
+        return hashlib.md5(usedforsecurity=False)
+else:
+    def _insecure_md5():
+        return hashlib.md5()
+
+
 def names_digest(*args, length):
     """
     Generate a 32-bit digest of a set of arguments that can be used to shorten
     identifying names.
     """
-    h = hashlib.md5()
+    h = _insecure_md5()
     for arg in args:
         h.update(arg.encode())
     return h.hexdigest()[:length]
